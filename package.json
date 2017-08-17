@@ -1,0 +1,20 @@
+{
+  "name": "bmi3-schema-validator",
+  "version": "1.0.0",
+  "description": "Simple validation library for bmi3 interpreter",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "lint": "./node_modules/eslint/bin/eslint.js ./",
+    "test": "node ./node_modules/.bin/cucumber-js"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "cucumber": "^2.2.0",
+    "eslint": "^4.2.0"
+  },
+  "author": "Constantin T.",
+  "license": "MIT"
+}
