@@ -8,12 +8,13 @@
   },
   "scripts": {
     "lint": "./node_modules/eslint/bin/eslint.js ./",
-    "test": "node ./node_modules/.bin/cucumber-js"
+    "test": "jest"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
     "cucumber": "^2.2.0",
-    "eslint": "^4.2.0"
+    "eslint": "^4.2.0",
+    "jest": "^20.0.4"
   },
   "author": "Constantin T.",
   "license": "MIT"
