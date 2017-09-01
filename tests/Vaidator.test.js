@@ -56,3 +56,43 @@ test('Валидная схема и невалидные данные = мас�
     new TypeError('Invalid property client.gender; Type of property should be a String; Property is enumerable [male, female];')
   ])
 });
+
+const defaultSchema = {
+  name: {
+    type: String,
+    default: 'Петя'
+  },
+  card: {
+    type: Number,
+    default: 12345,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date
+  }
+}
+
+test('Валиданя с default', () => {
+  const validator = new Validator(defaultSchema, false, true);
+  const data = {
+    card: 1
+  }
+  validator.validateSync(data);
+  expect(data).toEqual({
+    name: 'Петя',
+    card: 1,
+    date: Date()
+  });
+});
+
+test('Валиданя с default', () => {
+  const validator = new Validator(defaultSchema, false, true);
+  const data = {}
+  validator.validateSync(data);
+  expect(data).toEqual({
+    name: 'Петя',
+    card: 12345,
+    date: Date()
+  });
+});
