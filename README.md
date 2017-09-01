@@ -97,7 +97,8 @@ const typesMap = new Map([
   [ null,      'a null'       ],
   [ Object,    'an Object'    ],
   [ Array,     'an Array'     ],
-  [ NaN,       'a NaN'        ]
+  [ NaN,       'a NaN'        ],
+  [ Function,  'a Function'   ]
 ]);
 ```
 
@@ -149,9 +150,67 @@ const validator = new Validator(schema, strict);
 validator.strict = true;
 ```
 
-## Расширение валидации
+## Расширение функционала
 
-Если вы хотите добавить дополнительную логику в ваш валидатор, можно просто применить простое наследование:
+### Экземпляр класса
+Вы можете указать любую функцию-конструктор в качестве типа. По умолчанию валидатор проверит соответствие через `instanceof`, так что для экземпляров наследников конструктора валидация тоже будет проходить:
+```javascript
+class User {
+  constructor(name, lastname) {
+    this.name = name;
+    this.lastname = lastname;
+  }
+}
+
+
+const validator = new Validator({
+  user: {
+    type: User,
+    required: true
+  },
+  orderId: {
+    type: Number,
+    required: true
+  }
+});
+
+validator.validateSync({
+  user: new User('Вася', 'Петров'),
+  orderId: 12
+});
+```
+
+### Тип-валидатор
+
+Иногда валидировать по тому, является поле наследником класса или нет недостаточно, тогда можно реализовать тип-валидатор. Это просто функция, для которой мы дополнительно задаем поле `isValidator` как true.
+Допустим нам нужно, чтобы у User всегда было задано поле name:
+```javascript
+function UserType(value, level, options) {
+  return value instanceof User && value.name && typeof value.name === 'string';
+}
+```
+В `level` лежит тот узел, который мы сейчас рассматриваем — т. е. текущее поле в окружении соседних.
+
+```javascript
+{
+  sublevel: {
+    age: Number,
+    gender: {
+      type: String,
+      enum: ['male', 'female']
+    },
+    hair: String
+  },
+  name: String
+}
+
+Для `name` это будет `sublevel`, а для `age` — `gender` и `hair`, т. е. это тот объект или подобъект, поле которого сейчас проверяется.
+```
+
+В `options` будут лежать модификаторы, для узла, такие как `required` и т. п.
+
+### Наследование
+Допустим этого не достаточно и вы хотите добавить дополнительную логику в валидатор, можно просто применить простое наследование нового валидатора от старого:
 ```javascript
 class MyValidator extends Validator {
   validateSync(level, schema, depth = 0, path = '', buffer = []) {
@@ -167,6 +226,44 @@ class MyValidator extends Validator {
   }
 }
 ```
+
+## Значения по-умолчанию
+
+Третим параметром в конструктор валидатора можно передать флаг «Проверяй модификатор `default` и наполняй проверяемый объект». Т. е. если поставить его в `true` или записать `validator.default = true` при валидации будет происходить подстановка значений из модификатора `default`, если валидация не прошла или поля вообще нет.
+
+Пример:
+```javascript
+const validator = Validator({
+  name: {
+    type: String,
+    default: 'Нет имени'
+  },
+  card: {
+    type: Number,
+    default: 12345,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date
+  }
+}, false, true) // Третий параметр, поставили validator.default в true
+
+const data = {
+  card: 1
+}
+
+validator.validateSync(data);
+
+/**
+ * data.name —> "Нет имени"
+ * data.number -> 1
+ * data.date —> Date()
+ */
+```
+
+Обратите внимание, что если в качестве значения по-умолчанию передать функцию, будет записан её результат
+
 
 ## Лицензия
 MIT. Никакие гарантии на библиотеку не распространяются, она предоставляется как есть.
