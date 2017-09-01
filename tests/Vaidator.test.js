@@ -96,3 +96,33 @@ test('Валиданя с default', () => {
     date: Date()
   });
 });
+
+test('Валидная схема c типом-классом', () => {
+  function A() { this.hello = 'world' }
+  const validator = new Validator({
+    a: {
+      required: true,
+      type: A
+    }
+  });
+  expect(validator.validateSync({ a: new A() })).toBe(undefined);
+});
+
+test('Валидная схема c типом-функцией', () => {
+  function A(prop) { this.hello = prop || 'world' }
+  function B(value) {
+    return value && value.hello === 'world'
+  }
+  B.isValidator = true;
+  const validator = new Validator({
+    a: {
+      required: true,
+      type: B
+    },
+    b: {
+      required: true,
+      type: NaN
+    }
+  });
+  expect(validator.validateSync({ a: new A(), b: 'Привет' })).toBe(undefined);
+});
